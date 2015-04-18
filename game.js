@@ -15,6 +15,7 @@ var context = canvas.getContext("2d");
 
 var dots = [];
 var images = {};
+var points = 0;
 
 function Dot(color) {
 	this.color = color;
@@ -104,6 +105,12 @@ function draw() {
 		if (dot.ready)
 			context.drawImage(dot.img, dot.x, dot.y);
 	}
+
+	context.fillStyle = "black";
+	context.font = "16px Helvetica";
+	context.textAlign = "left";
+	context.textBaseline = "top";
+	context.fillText("Points: " + points, 5, 5);
 }
 
 function updateDots(delta) {
@@ -132,11 +139,10 @@ function userInput(event) {
 		var bottom = top + DOT_SIZE;
 
 		if (x >= left && x <= right && y >= top && y <= bottom) {
-			// delete dot on click
-			dot.ready = false;
-			//dot.newLocation();
+			dot.ready = false; // delete dot on click
 			dot.reset();
 			dot.newColor();
+			points++;
 		}
 	}
 }
