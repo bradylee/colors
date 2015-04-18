@@ -2,6 +2,7 @@ var GAME_WIDTH = 375;
 var GAME_HEIGHT = 500;
 var DOT_SIZE = 66; // pixels
 var DOT_DELAY = 1000;
+var MAX_DOTS = 10;
 var NUM_COLORS = 6;
 var COLORS = ["red", "green", "blue", "cyan", "magenta", "yellow"];
 
@@ -20,7 +21,7 @@ function Dot(color) {
 	this.delay = DOT_DELAY;
 	this.ready = false;
 
-	this.newLocation = function() {
+	this.newLocation = function(allow_overlap) {
 		var location = randomLocation(DOT_SIZE);
 		this.x = location.x;
 		this.y = location.y;
@@ -29,32 +30,41 @@ function Dot(color) {
 	this.newColor = function () {
 		this.color = randomColor();
 		this.img = images[this.color];
-	}
+	};
 
 	var valid_location = true;
 
-	do {
-		this.newLocation();
-		valid_location = true;
+	this.reset = function() {
+		this.newColor();
 
-		for (var d in dots) {
-			var dot = dots[d];
-			var left = dot.x;
-			var right = left + DOT_SIZE;
-			var top = dot.y;
-			var bottom = top + DOT_SIZE;
+		do {
+			this.newLocation();
+			valid_location = true;
 
-			p1 = {x: this.x, y: this.y};
-			p2 = {x: this.x + DOT_SIZE, y: this.y + DOT_SIZE};
+			for (var d in dots) {
+				var dot = dots[d];
+				var left = dot.x;
+				var right = left + DOT_SIZE;
+				var top = dot.y;
+				var bottom = top + DOT_SIZE;
 
-			if ((p1.x >= left && p1.x <= right || p2.x >= left && p2.x <= right) && 
-				(p1.y >= top && p1.y <= bottom || p2.y >= top && p2.y <= bottom)) {
-					valid_location = false;
+				p1 = {x: this.x, y: this.y};
+				p2 = {x: this.x + DOT_SIZE, y: this.y + DOT_SIZE};
+
+				if (dot == this)
+					continue;
+
+				if ((p1.x >= left && p1.x <= right || p2.x >= left && p2.x <= right) && 
+					(p1.y >= top && p1.y <= bottom || p2.y >= top && p2.y <= bottom)) {
+						valid_location = false;
+				}
 			}
-		}
-	} while (!valid_location);
+		} while (!valid_location);
+	}
 
-	this.img = images[color];
+	this.reset();
+	if (!(typeof color === "undefined"))
+		this.img = images[color];
 }
 
 function randomLocation(size) {
@@ -80,18 +90,9 @@ function setup() {
 		images[color] = img;
 	}
 
-	console.log(images);
-/*
-
-	for (var i in images) {
-		image = images[i];
-		image.src = "assets/" + i + ".png";
+	for (var i = 0; i < MAX_DOTS; i++) {
+		dots.push(new Dot());
 	}
-	*/
-
-	dots.push(new Dot(randomColor()));
-	dots.push(new Dot(randomColor()));
-	dots.push(new Dot(randomColor()));
 }
 
 function draw() {
@@ -133,7 +134,8 @@ function userInput(event) {
 		if (x >= left && x <= right && y >= top && y <= bottom) {
 			// delete dot on click
 			dot.ready = false;
-			dot.newLocation();
+			//dot.newLocation();
+			dot.reset();
 			dot.newColor();
 		}
 	}
