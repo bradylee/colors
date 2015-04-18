@@ -3,8 +3,19 @@ var GAME_HEIGHT = 500;
 var DOT_SIZE = 66; // pixels
 var DOT_DELAY = 1000;
 var MAX_DOTS = 10;
+var BG_DELAY = 5000;
 var NUM_COLORS = 6;
 var COLORS = ["red", "green", "blue", "cyan", "magenta", "yellow"];
+var LIGHT = ["red", "green", "blue"];
+var PIGMENT = ["cyan", "magenta", "yellow"];
+
+LIGHT.contains = function(key) {
+	return contains(this, key);
+};
+
+PIGMENT.contains = function(key) {
+	return contains(this, key);
+};
 
 var canvas = document.createElement("canvas");
 canvas.width = GAME_WIDTH;
@@ -16,6 +27,10 @@ var context = canvas.getContext("2d");
 var dots = [];
 var images = {};
 var points = 0;
+var background = {
+	color: "white",
+	delay: BG_DELAY
+};
 
 function Dot(color) {
 	this.color = color;
@@ -83,6 +98,10 @@ function randomColor() {
 	return COLORS[r];
 }
 
+function contains(arr, key) {
+	return (arr.indexOf(key) > -1);
+}
+
 function setup() {
 	for (var c in COLORS) {
 		var color = COLORS[c];
@@ -97,7 +116,7 @@ function setup() {
 }
 
 function draw() {
-	context.fillStyle = "white";
+	context.fillStyle = background.color; // "white";
 	context.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
 	for (color in dots) {
@@ -106,7 +125,11 @@ function draw() {
 			context.drawImage(dot.img, dot.x, dot.y);
 	}
 
-	context.fillStyle = "black";
+	if (background.color == "white")
+		context.fillStyle = "black";
+	else
+		context.fillStyle = "white";
+
 	context.font = "16px Helvetica";
 	context.textAlign = "left";
 	context.textBaseline = "top";
@@ -127,6 +150,26 @@ function updateDots(delta) {
 	}
 }
 
+function updateBackground(delta) {
+	background.delay -= delta;
+	if (background.delay <= 0) {
+		if (background.color == "white")
+			background.color = "black";
+		else
+			background.color = "white";
+
+		background.delay = BG_DELAY;
+	}
+}
+
+function updatePoints(dot) {
+	//if (background.color == "white" && LIGHT.indexOf)
+
+	if (background.color == "white" && PIGMENT.contains(dot.color) ||
+		background.color == "black" && LIGHT.contains(dot.color))
+		points++;
+}
+
 function userInput(event) {
 	var x = event.clientX - 10; // temp deal with page margin
 	var y = event.clientY - 10;
@@ -140,9 +183,8 @@ function userInput(event) {
 
 		if (x >= left && x <= right && y >= top && y <= bottom) {
 			dot.ready = false; // delete dot on click
+			updatePoints(dot);
 			dot.reset();
-			dot.newColor();
-			points++;
 		}
 	}
 }
@@ -151,6 +193,7 @@ function main() {
 	var now = Date.now();
 	var delta = now - then;
 	updateDots(delta);
+	updateBackground(delta);
 	draw();
 	then = now;
 	requestAnimationFrame(main)
