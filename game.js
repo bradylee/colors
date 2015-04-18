@@ -1,9 +1,17 @@
 var GAME_WIDTH = 375;
 var GAME_HEIGHT = 500;
+
+var dot_delay = 1000;
+var DOT_DELAY_STEP = 100;
+var MIN_DOT_DELAY = 500;
+var DOT_DURATION = 1000;
+var MAX_DOTS = 15;
 var DOT_SIZE = 66; // pixels
-var DOT_DELAY = 1000;
-var MAX_DOTS = 10;
-var BG_DELAY = 5000;
+
+var bg_delay = 5000;
+var MIN_BG_DELAY = 1000;
+var BG_DELAY_STEP = 500;
+
 var NUM_COLORS = 6;
 var COLORS = ["red", "green", "blue", "cyan", "magenta", "yellow"];
 var LIGHT = ["red", "green", "blue"];
@@ -21,12 +29,11 @@ var images = {};
 var points = 0;
 var background = {
 	color: "white",
-	delay: BG_DELAY
+	delay: bg_delay
 };
 
 function Dot(color) {
 	this.color = color;
-	this.delay = DOT_DELAY;
 	this.ready = false;
 
 	this.newLocation = function(allow_overlap) {
@@ -110,25 +117,9 @@ function draw() {
 	context.textAlign = "left";
 	context.textBaseline = "top";
 	context.fillText("Points: " + points, 5, 5);
+	context.fillText("Dot delay: " + dot_delay, 5, GAME_HEIGHT - 40);
+	context.fillText("BG delay: " + bg_delay, 5, GAME_HEIGHT - 21);
 }
-
-/*
-function updateDots(delta) {
-	for (var d in dots) {
-		var dot = dots[d];
-
-		if (dot.ready)
-			dot.delay = DOT_DELAY;
-		else {
-			dot.delay -= delta;
-			if (dot.delay <= 0)
-				dot.ready = true;
-
-			break;
-		}
-	}
-}
-*/
 
 var next_dot = 0;
 
@@ -143,7 +134,7 @@ function updateDots(delta) {
 				break;
 			}
 		}
-		next_dot = DOT_DELAY;
+		next_dot = dot_delay;
 	}
 }
 
@@ -155,14 +146,29 @@ function updateBackground(delta) {
 		else
 			background.color = "white";
 
-		background.delay = BG_DELAY;
+		background.delay = bg_delay;
 	}
 }
 
+var next_speed_up = 5;
+var next_bg_speed_up = 10;
 function updatePoints(dot) {
 	if (background.color == "white" && PIGMENT.contains(dot.color) ||
-		background.color == "black" && LIGHT.contains(dot.color))
+		background.color == "black" && LIGHT.contains(dot.color)) {
 		points++;
+		next_speed_up--;
+		next_bg_speed_up--;
+	}
+
+	if (next_speed_up == 0 && dot_delay > MIN_DOT_DELAY) {
+		dot_delay -= DOT_DELAY_STEP;
+		next_speed_up = 5;
+	}
+
+	if (next_bg_speed_up == 0 && bg_delay > MIN_BG_DELAY) {
+		bg_delay -= BG_DELAY_STEP;
+		next_bg_speed_up = 10;
+	}
 }
 
 function userInput(event) {
