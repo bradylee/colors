@@ -9,14 +9,6 @@ var COLORS = ["red", "green", "blue", "cyan", "magenta", "yellow"];
 var LIGHT = ["red", "green", "blue"];
 var PIGMENT = ["cyan", "magenta", "yellow"];
 
-LIGHT.contains = function(key) {
-	return contains(this, key);
-};
-
-PIGMENT.contains = function(key) {
-	return contains(this, key);
-};
-
 var canvas = document.createElement("canvas");
 canvas.width = GAME_WIDTH;
 canvas.height = GAME_HEIGHT;
@@ -83,28 +75,12 @@ function Dot(color) {
 		this.img = images[color];
 }
 
-function randomLocation(size) {
-	var hori = GAME_WIDTH - size;
-	var vert = GAME_HEIGHT - size;
-	var location = {
-		x: Math.floor(Math.random() * hori),
-		y: Math.floor(Math.random() * vert)
-	};
-	return location;
-}
-
-function randomColor() {
-	var r = Math.floor(Math.random() * (NUM_COLORS));
-	return COLORS[r];
-}
-
-function contains(arr, key) {
-	return (arr.indexOf(key) > -1);
-}
 
 function setup() {
-	for (var c in COLORS) {
+	//for (var c in COLORS) {
+	for (var c = 0; c < NUM_COLORS; c++) {
 		var color = COLORS[c];
+		console.log(color);
 		var img = new Image();
 		img.src = "assets/" + color + ".png";
 		images[color] = img;
@@ -136,6 +112,7 @@ function draw() {
 	context.fillText("Points: " + points, 5, 5);
 }
 
+/*
 function updateDots(delta) {
 	for (var d in dots) {
 		var dot = dots[d];
@@ -146,7 +123,27 @@ function updateDots(delta) {
 			dot.delay -= delta;
 			if (dot.delay <= 0)
 				dot.ready = true;
+
+			break;
 		}
+	}
+}
+*/
+
+var next_dot = 0;
+
+function updateDots(delta) {
+	next_dot -= delta;
+	if (next_dot <= 0) {
+		for (var d = 0; d < MAX_DOTS; d++) {
+			var dot = dots[d];
+			if (!dot.ready) {
+				dot.ready = true;
+				console.log(dots);
+				break;
+			}
+		}
+		next_dot = DOT_DELAY;
 	}
 }
 
@@ -163,8 +160,6 @@ function updateBackground(delta) {
 }
 
 function updatePoints(dot) {
-	//if (background.color == "white" && LIGHT.indexOf)
-
 	if (background.color == "white" && PIGMENT.contains(dot.color) ||
 		background.color == "black" && LIGHT.contains(dot.color))
 		points++;
@@ -189,6 +184,27 @@ function userInput(event) {
 	}
 }
 
+
+function randomLocation(size) {
+	var hori = GAME_WIDTH - size;
+	var vert = GAME_HEIGHT - size;
+	var location = {
+		x: Math.floor(Math.random() * hori),
+		y: Math.floor(Math.random() * vert)
+	};
+	return location;
+}
+
+function randomColor() {
+	var r = Math.floor(Math.random() * (NUM_COLORS));
+	return COLORS[r];
+}
+
+Array.prototype.contains = function(key) {
+	return (this.indexOf(key) > -1)
+}
+
+
 function main() {
 	var now = Date.now();
 	var delta = now - then;
@@ -204,8 +220,6 @@ requestAnimationFrame = w.requestAnimationFrame
 || w.webkitRequestAnimationFrame 
 || w.msRequestAnimationFrame 
 || w.mozRequestAnimationFrame;
-
-
 
 var then = Date.now();
 setup();
